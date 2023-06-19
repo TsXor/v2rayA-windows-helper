@@ -3,8 +3,7 @@ import sys
 if len(sys.argv) > 1:
     if sys.argv[1] == 'webview':
         from open_webview import open_webview_window
-        open_webview_window()
-        exit()
+        open_webview_window(); exit()
 
 
 import subprocess, time
@@ -52,25 +51,28 @@ class v2rayaApplication:
             ],
             stdout=self.logfile_fp,
         )
+        self.start_webview()
+    
+    def start_webview(self):
+        self.webview_process = subprocess.Popen([sys.argv[0], 'webview', str(self.ui_port)], shell=True)
+        while not (webview_hwnd := win32gui.FindWindow(None, 'V2rayA Web UI')): time.sleep(0.5)
+        self.webview_hwnd = webview_hwnd
+        subprocess.Popen([str(ROOT_DIR / 'chore-worker' / 'hook_minimize_button' / 'hook_minimize_button.bat'), str(webview_hwnd)], shell=True)
     
     def webview_ui(self):
-        if self.webview_process:
-            if self.webview_process.poll() is None:
-                webview_hwnd = win32gui.FindWindow(None, 'V2rayA Web UI')
-                win32gui.SetForegroundWindow(webview_hwnd)
-                return
-        
-        self.webview_process = subprocess.Popen([sys.argv[0], 'webview', str(self.ui_port)], shell=True)
-
+        if self.webview_process.poll() is None:
+            win32gui.ShowWindow(self.webview_hwnd, win32con.SW_SHOWNORMAL)
+            win32gui.SetForegroundWindow(self.webview_hwnd)
+        else:
+            self.start_webview()
+    
     def close(self):
         self.process.kill()
         self.logfile_fp.close()
         subprocess.run(['taskkill', '/f', '/im', str(self.vcore_executable_path.name)], shell=True)
         close_proxy()
-        if self.webview_process:
-            if self.webview_process.poll() is None:
-                webview_hwnd = win32gui.FindWindow(None, 'V2rayA Web UI')
-                win32gui.PostMessage(webview_hwnd, win32con.WM_CLOSE, 0, 0)
+        if self.webview_process.poll() is None:
+            win32gui.PostMessage(self.webview_hwnd, win32con.WM_CLOSE, 0, 0)
         self.closed = True
     
     def __del__(self):
@@ -79,7 +81,7 @@ class v2rayaApplication:
 
 class v2rayaTray:
     name = "V2rayA"
-    icon_path = ROOT_DIR / 'chore-worker' / 'v2raya_icon.png'
+    icon_path = ROOT_DIR / 'chore-worker' / 'v2raya.png'
     desc = "V2rayA tray"
 
     def __init__(self):
