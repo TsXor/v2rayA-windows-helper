@@ -27,6 +27,6 @@ cmake -G"Visual Studio 17 2022" -A x64   -D ARCH=x64 ..\..
 cmake --build . --config %1
 cd ..\..
 
-xcopy /Y hook_minimize_button.bat dist\%1\
+xcopy /Y run.bat dist\%1\
 
 :END

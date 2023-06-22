@@ -1,8 +1,6 @@
-import webview, sys, win32print, win32gui, json
+import webview, win32print, win32gui, json
 from pathlib import Path
-
-
-ROOT_DIR = Path(sys.argv[0]).parent.parent
+from functools import partial
 
 
 def get_screen_size():
@@ -29,21 +27,25 @@ def inrange(x, r):
     rl, rr = r
     return x >= rl and x < rr
 
-def on_closing():
+def on_closing(config_dir: Path):
     window = webview.windows[0]
-    with open(ROOT_DIR / 'config' / 'chore-worker' / 'last_pos.json', 'w') as last_pos_fp:
+    with open(config_dir / 'last_pos.json', 'w') as last_pos_fp:
         json.dump([window.x, window.y, window.width, window.height], last_pos_fp)
 
-def open_webview_window():
+def open_webview_window(config_dir: Path, ui_port: int):
     try:
-        with open(ROOT_DIR / 'config' / 'chore-worker' / 'last_pos.json') as last_pos_fp:
+        with open(config_dir / 'last_pos.json') as last_pos_fp:
             w_size = json.load(last_pos_fp)
         if not all(inrange(s, r) for s, r in zip(w_size, get_pos_range)): raise ValueError
     except:
          w_size = get_default_pos()
     w_x, w_y, w_width, w_height = w_size
 
-    window = webview.create_window('V2rayA Web UI', f'http://127.0.0.1:{sys.argv[2]}',
+    window = webview.create_window('V2rayA Web UI', f'http://127.0.0.1:{ui_port}',
                                     width=w_width, height=w_height, x=w_x, y=w_y)
-    window.events.closing += on_closing
-    webview.start(private_mode=False, storage_path=str(ROOT_DIR / 'config' / 'chore-worker' / 'webview'))
+    window.events.closing += partial(on_closing, config_dir)
+    webview.start(private_mode=False, storage_path=str(config_dir / 'webview_data'))
+
+if __name__ == '__main__':
+    import sys
+    open_webview_window(Path(sys.argv[1]), int(sys.argv[2]))
