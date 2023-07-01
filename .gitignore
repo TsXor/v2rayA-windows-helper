@@ -1,7 +1,5 @@
 .vscode
 __pycache__
-src/hook_minimize_button/build
-src/hook_minimize_button/dist
 src/*.build
 src/*.dist
 packer/dist
