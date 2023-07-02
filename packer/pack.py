@@ -156,6 +156,10 @@ retry_until_success(lambda:
     copy_tree_overwrite(curdir.parent / 'src' / 'OpenWebview2Window' / 'x64' / 'Release',
                         curdir / 'dist' / 'chore-worker' / 'OpenWebview2Window')
 )
+retry_until_success(lambda:
+    copy_tree_overwrite(curdir.parent / 'res',
+                        curdir / 'dist' / 'chore-worker')
+)
 log_process('finished.')
 
 log_process('Packing dist into zip ...')
