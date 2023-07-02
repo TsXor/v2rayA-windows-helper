@@ -7,7 +7,6 @@
 ## 编译与打包
 由于`nuitka`目前的发行版本不能成功打包`clr`，所以需要安装开发版的`nuitka`。  
 ```
-cd packer
-pack.py
+packer\pack.py
 ```
 将在`packer`下产生`dist.zip`。  
