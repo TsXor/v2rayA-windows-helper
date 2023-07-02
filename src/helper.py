@@ -1,5 +1,6 @@
 import sys, os, subprocess, time
 from pathlib import Path
+from socket import socket
 import pystray, win32gui, win32con
 from fake_image_class import FakeImage
 from proxy_setter import close_proxy
@@ -13,7 +14,21 @@ SP_NOCONSOLE = subprocess.STARTUPINFO()
 SP_NOCONSOLE.dwFlags = subprocess.CREATE_NEW_CONSOLE | subprocess.STARTF_USESHOWWINDOW
 SP_NOCONSOLE.wShowWindow = subprocess.SW_HIDE
 WINDOW_TITLE = 'V2rayA Web UI'
+V2RAYA_DEFAULT_PORT = 2017
+LOOPBACK_ADDR = '127.0.0.1'
 
+
+def get_available_port(addr: str, start_from: int):
+    s = socket()
+    port = start_from
+    while True:
+        try:
+            s.bind((addr, port))
+            break
+        except OSError:
+            port += 1
+    s.close()
+    return port
 
 def ensure_directory(dirp: Path):
     dirp.mkdir(parents=True, exist_ok=True)
@@ -37,10 +52,11 @@ def all_to_string(*args):
 
 
 class v2rayaApplication:
-    def __init__(self, app_root: Path, ui_port=2017, n_max_logs=10):
+    def __init__(self, app_root: Path, ui_port=V2RAYA_DEFAULT_PORT, n_max_logs=10):
         self._alive = True
         self.app_root = app_root
-        self.ui_port = ui_port
+        self.ui_port = get_available_port(LOOPBACK_ADDR, ui_port)
+        if self.ui_port != ui_port: print(f'Port {ui_port} unavailable, changed to {self.ui_port}.')
         self.n_max_logs = n_max_logs
 
         # find paths
@@ -67,7 +83,7 @@ class v2rayaApplication:
         self.process = subprocess.Popen(
             all_to_string(
                 v2raya_executable_path, '--lite',
-                '--address',         f'0.0.0.0:{ui_port}',
+                '--address',         f'0.0.0.0:{self.ui_port}',
                 '--v2ray-bin',       vcore_executable_path,
                 '--config',          v2raya_config_dir,
                 '--v2ray-confdir',   vcore_config_dir,
@@ -98,7 +114,7 @@ class v2rayaApplication:
             all_to_string(
                 self.open_webview_path,
                 '--userdata-path', self.helper_config_dir,
-                '--navigate-url',  f'http://127.0.0.1:{self.ui_port}',
+                '--navigate-url',  f'http://{LOOPBACK_ADDR}:{self.ui_port}',
                 '--window-title', WINDOW_TITLE,
             ),
             shell=True,
