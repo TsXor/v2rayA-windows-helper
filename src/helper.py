@@ -1,4 +1,4 @@
-import sys, subprocess, time
+import sys, os, subprocess, time
 from pathlib import Path
 import pystray, win32gui, win32con
 from fake_image_class import FakeImage
@@ -6,13 +6,33 @@ from proxy_setter import close_proxy
 
 
 SELF_PATH = Path(sys.argv[0])
-PY_EXEC_SUFFIX = SELF_PATH.suffix
 
 TIME_TEMPLATE = '%Y-%m-%d_%H-%M-%S'
 MAX_WAIT_TIME = 5
 SP_NOCONSOLE = subprocess.STARTUPINFO()
 SP_NOCONSOLE.dwFlags = subprocess.CREATE_NEW_CONSOLE | subprocess.STARTF_USESHOWWINDOW
 SP_NOCONSOLE.wShowWindow = subprocess.SW_HIDE
+
+
+def ensure_directory(dirp: Path):
+    dirp.mkdir(parents=True, exist_ok=True)
+    return dirp
+
+def ensure_file(dirp: Path, globs: list[str]):
+    ensure_directory(dirp)
+    available_paths: list[Path] = []
+    for glob in globs:
+        try:
+            available_paths.append(list(dirp.glob(glob))[0])
+        except IndexError:
+            pass
+    if available_paths:
+        return available_paths[0]
+    else:
+        raise FileNotFoundError('target file not found', dirp, globs)
+
+def all_to_string(*args):
+    return [arg if isinstance(arg, str) else str(arg) for arg in args]
 
 
 class v2rayaApplication:
@@ -22,63 +42,40 @@ class v2rayaApplication:
         self.ui_port = ui_port
         self.n_max_logs = n_max_logs
 
-        v2raya_executable_path, \
-        v2raya_config_dir, \
-        v2raya_log_dir, \
-        vcore_executable_path, \
-        vcore_asset_dir, \
-        vcore_config_dir, \
-        helper_config_dir, \
-        open_webview_path, \
-        hook_minimize_button_path  = self.find_paths()
+        # find paths
+        v2raya_executable_path = ensure_file(self.app_root / 'v2raya', ['v2raya*.exe'])
+        v2raya_config_dir      = ensure_directory(self.app_root / 'v2raya' / 'config')
+        v2raya_log_dir         = ensure_directory(self.app_root / 'v2raya' / 'logs')
+        vcore_executable_path  = ensure_file(self.app_root / 'vcore', ['v2ray.exe', 'xray.exe'])
+        vcore_asset_dir        = ensure_directory(self.app_root / 'vcore')
+        vcore_config_dir       = ensure_directory(self.app_root / 'vcore' / 'config')
+        helper_config_dir      = ensure_directory(self.app_root / 'chore-worker' / 'config')
+        open_webview_path      = ensure_file(self.app_root / 'chore-worker' / 'OpenWebview2Window', ['EdgeBrowserApp.exe'])
+        hook_button_path       = ensure_file(self.app_root / 'chore-worker' / 'hook_minimize_button', ['run.bat'])
 
+        # save some paths for future use
         self.vcore_executable_path = vcore_executable_path
-        self.helper_config_dir = helper_config_dir
-        self.v2raya_log_dir = v2raya_log_dir
-        self.open_webview_path = open_webview_path
-        self.hook_minimize_button_path = hook_minimize_button_path
+        self.helper_config_dir     = helper_config_dir
+        self.v2raya_log_dir        = v2raya_log_dir
+        self.open_webview_path     = open_webview_path
+        self.hook_button_path      = hook_button_path
 
         self.logfile_fp = self.open_new_log_fp()
         self.clean_logs()
 
         self.process = subprocess.Popen(
-            [
-                str(v2raya_executable_path), '--lite',
-                '--address', f'0.0.0.0:{ui_port}',
-                '--v2ray-bin', str(vcore_executable_path),
-                '--config', str(v2raya_config_dir),
-                '--v2ray-confdir', str(vcore_config_dir),
-                '--v2ray-assetsdir', str(vcore_asset_dir),
-            ],
+            all_to_string(
+                v2raya_executable_path, '--lite',
+                '--address',         f'0.0.0.0:{ui_port}',
+                '--v2ray-bin',       vcore_executable_path,
+                '--config',          v2raya_config_dir,
+                '--v2ray-confdir',   vcore_config_dir,
+                '--v2ray-assetsdir', vcore_asset_dir,
+            ),
             stdout=self.logfile_fp,
             startupinfo=SP_NOCONSOLE,
         )
         self.start_webview()
-    
-    def find_paths(self):
-        try: v2raya_executable_path = list((self.app_root / 'v2raya').glob('v2raya*.exe'))[0]
-        except: raise EnvironmentError('Executable cannot be found!', 'v2rayA')
-        try: 
-            vcore_executable_path_X = list((self.app_root / 'vcore').glob('v2ray.exe'))
-            vcore_executable_path_V = list((self.app_root / 'vcore').glob('xray.exe'))
-            vcore_executable_path = (vcore_executable_path_X + vcore_executable_path_V)[0]
-        except: raise EnvironmentError('Executable cannot be found!', 'v2ray core')
-        vcore_asset_dir = self.app_root / 'vcore'
-        vcore_config_dir = self.app_root / 'vcore' / 'config'
-        v2raya_config_dir = self.app_root / 'v2raya' / 'config'
-        v2raya_log_dir = self.app_root / 'v2raya' / 'logs'
-        helper_config_dir = self.app_root / 'chore-worker' / 'config'
-        open_webview_path = self.app_root / 'chore-worker' / f'open_webview{PY_EXEC_SUFFIX}'
-        hook_minimize_button_path = self.app_root / 'chore-worker' / 'hook_minimize_button' / 'run.bat'
-        return v2raya_executable_path \
-             , v2raya_config_dir \
-             , v2raya_log_dir \
-             , vcore_executable_path \
-             , vcore_asset_dir \
-             , vcore_config_dir \
-             , helper_config_dir \
-             , open_webview_path \
-             , hook_minimize_button_path
 
     def open_new_log_fp(self):
         self.cur_logfile_path = self.v2raya_log_dir / f'log_{time.strftime(TIME_TEMPLATE, time.localtime())}.log'
@@ -94,23 +91,31 @@ class v2rayaApplication:
     def open_cur_log(self):
         subprocess.run(['notepad.exe', str(self.cur_logfile_path)])
 
-    def start_webview(self):
-        self.webview_process = subprocess.Popen([str(self.open_webview_path), str(self.helper_config_dir), str(self.ui_port)],
-                                               shell=True, startupinfo=SP_NOCONSOLE)
+    def start_webview_process(self):
+        os.chdir(self.helper_config_dir)
+        self.webview_process = subprocess.Popen(
+            all_to_string(
+                self.open_webview_path,
+                '--userdata-path', self.helper_config_dir,
+                '--navigate-url',  f'127.0.0.1:{self.ui_port}',
+            ),
+            shell=True,
+            startupinfo=SP_NOCONSOLE
+        )
         sleep_time = 0
         while not (webview_hwnd := win32gui.FindWindow(None, 'V2rayA Web UI')):
             time.sleep(0.5); sleep_time += 0.5
             if sleep_time >= MAX_WAIT_TIME: raise EnvironmentError('Webview no response!')
         self.webview_hwnd = webview_hwnd
-        subprocess.Popen([str(self.hook_minimize_button_path), str(webview_hwnd)],
+        subprocess.Popen(all_to_string(self.hook_button_path, webview_hwnd),
                          shell=True, startupinfo=SP_NOCONSOLE)
     
-    def webview_ui(self):
+    def open_webview_window(self):
         if self.webview_process.poll() is None:
             win32gui.ShowWindow(self.webview_hwnd, win32con.SW_SHOWNORMAL)
             win32gui.SetForegroundWindow(self.webview_hwnd)
         else:
-            self.start_webview()
+            self.start_webview_process()
     
     def close(self):
         self.process.kill()
@@ -134,7 +139,7 @@ class v2rayaTray:
         self.app = v2rayaApplication(app_root, **app_config)
         icon_path = app_root / 'chore-worker' / 'v2raya.ico'
         menu = (
-            pystray.MenuItem(text='打开V2rayA Web UI', action=self.app.webview_ui, default=True),
+            pystray.MenuItem(text='打开V2rayA Web UI', action=self.app.open_webview_window, default=True),
             pystray.MenuItem(text='打开当前日志文件', action=self.app.open_cur_log),
             pystray.MenuItem(text='退出', action=self.exit),
         )
