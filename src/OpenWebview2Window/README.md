@@ -9,15 +9,16 @@
 EdgeBrowserApp.exe
     --userdata-path /path/to/userdata
     --navigate-url https://www.example.com
+    --window-title TITLE
 ```
 参数都必须给出。  
 使用例：  
 ```
-EdgeBrowserApp.exe --userdata-path E:\Users\23Xor\Downloads\EdgeBrowserByAyush\x64\Release\webdata --navigate-url https://www.baidu.com
+EdgeBrowserApp.exe --userdata-path E:\Users\23Xor\Downloads\EdgeBrowserByAyush\x64\Release\webdata --navigate-url https://www.baidu.com --window-title 百度一下
 ```
 如果文件夹名带空格，需要加双引号，如：  
 ```
-EdgeBrowserApp.exe --userdata-path "E:\Users\AUSER\Downloads\path with space\webdata" --navigate-url https://www.baidu.com
+EdgeBrowserApp.exe --userdata-path "E:\Users\AUSER\Downloads\path with space\webdata" --navigate-url https://www.baidu.com --window-title 百度一下
 ```
 
 

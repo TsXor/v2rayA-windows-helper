@@ -139,6 +139,11 @@ BOOL CEdgeBrowserAppDlg::OnInitDialog()
     // save options to global static opts
     get_options();
 
+    // set window title
+    std::wstring window_title_key_str = L"--window-title";
+    const wchar_t *window_title = opts[window_title_key_str].c_str();
+    this->SetWindowText(window_title);
+
     // resize window
 	window_pos_t window_pos;
     if (PathFileExists(L"window_pos")) { READ_STRUCT(window_pos); }
