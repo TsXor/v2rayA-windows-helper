@@ -10,5 +10,3 @@ install(TARGETS hook_minimize_button
         DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/dist/${ARCH})
 install(TARGETS hook_minimize_button_dll
         DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/dist/${ARCH})
-install(FILES run.bat
-        DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/dist)

@@ -32,7 +32,7 @@ def zip_pack(root: Path):
 
 os.chdir(dp0.parent / 'src')
 subprocess.run(['nuitka_build.py'], shell=True)
-subprocess.run(['hook_minimize_button\cmake_build.bat', 'Release'], shell=True)
+subprocess.run(['hook_minimize_button\cmake_build.bat', 'x64'], shell=True)
 
 dist_root = dp0 / 'dist'; dist_root.mkdir(exist_ok=True)
 with open(dp0 / 'dir_tree.dirs') as dir_tree_fp: makedirs(dist_root, dir_tree_fp.read())
