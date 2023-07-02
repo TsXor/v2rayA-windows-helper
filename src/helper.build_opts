@@ -1,3 +1,4 @@
 --standalone
 --nofollow-import-to=numpy
 --nofollow-import-to=PIL
+--include-module=six

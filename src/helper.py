@@ -12,6 +12,7 @@ MAX_WAIT_TIME = 5
 SP_NOCONSOLE = subprocess.STARTUPINFO()
 SP_NOCONSOLE.dwFlags = subprocess.CREATE_NEW_CONSOLE | subprocess.STARTF_USESHOWWINDOW
 SP_NOCONSOLE.wShowWindow = subprocess.SW_HIDE
+WINDOW_TITLE = 'V2rayA Web UI'
 
 
 def ensure_directory(dirp: Path):
@@ -75,7 +76,7 @@ class v2rayaApplication:
             stdout=self.logfile_fp,
             startupinfo=SP_NOCONSOLE,
         )
-        self.start_webview()
+        self.start_webview_process()
 
     def open_new_log_fp(self):
         self.cur_logfile_path = self.v2raya_log_dir / f'log_{time.strftime(TIME_TEMPLATE, time.localtime())}.log'
@@ -97,13 +98,14 @@ class v2rayaApplication:
             all_to_string(
                 self.open_webview_path,
                 '--userdata-path', self.helper_config_dir,
-                '--navigate-url',  f'127.0.0.1:{self.ui_port}',
+                '--navigate-url',  f'http://127.0.0.1:{self.ui_port}',
+                '--window-title', WINDOW_TITLE,
             ),
             shell=True,
             startupinfo=SP_NOCONSOLE
         )
         sleep_time = 0
-        while not (webview_hwnd := win32gui.FindWindow(None, 'V2rayA Web UI')):
+        while not (webview_hwnd := win32gui.FindWindow(None, WINDOW_TITLE)):
             time.sleep(0.5); sleep_time += 0.5
             if sleep_time >= MAX_WAIT_TIME: raise EnvironmentError('Webview no response!')
         self.webview_hwnd = webview_hwnd
@@ -137,7 +139,7 @@ class v2rayaTray:
     def __init__(self, app_root: Path, app_config={}):
         self._alive = True
         self.app = v2rayaApplication(app_root, **app_config)
-        icon_path = app_root / 'chore-worker' / 'v2raya.ico'
+        icon_path = app_root / 'chore-worker' / 'v2raya_icon.ico'
         menu = (
             pystray.MenuItem(text='打开V2rayA Web UI', action=self.app.open_webview_window, default=True),
             pystray.MenuItem(text='打开当前日志文件', action=self.app.open_cur_log),
