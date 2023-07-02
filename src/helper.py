@@ -51,7 +51,7 @@ class v2rayaApplication:
         vcore_config_dir       = ensure_directory(self.app_root / 'vcore' / 'config')
         helper_config_dir      = ensure_directory(self.app_root / 'chore-worker' / 'config')
         open_webview_path      = ensure_file(self.app_root / 'chore-worker' / 'OpenWebview2Window', ['EdgeBrowserApp.exe'])
-        hook_button_path       = ensure_file(self.app_root / 'chore-worker' / 'hook_minimize_button', ['run.bat'])
+        hook_button_path       = ensure_file(self.app_root / 'chore-worker' / 'hook_minimize_button', ['hook_minimize_button.exe'])
 
         # save some paths for future use
         self.vcore_executable_path = vcore_executable_path
