@@ -52,10 +52,12 @@ def nuitka_build(file: Path, other_involved_files: Optional[list[Path]] = None):
     """other_involved_files should be all relative path to file.parent"""
     cwd = os.getcwd()
     os.chdir(file.parent)
+    build_opts_path = file.parent / f'{file.stem}.build_opts'
+    build_checksums_path = file.parent / f'{file.stem}.build_checksums'
     
     if (file.parent / f'{file.stem}.dist').is_dir():
         # check files and decide to build or not
-        involved_files = [file.name, *other_involved_files]
+        involved_files = [file.name, build_opts_path.name, *other_involved_files]
         last_checksum_lines = getlines(file.parent / f'{file.stem}.build_checksums')
         last_checksum_dict = {}
         for checksum_line in last_checksum_lines:
@@ -68,10 +70,10 @@ def nuitka_build(file: Path, other_involved_files: Optional[list[Path]] = None):
             return
         else:
             this_checksum_lines = [f'{k},{v}' for k, v in this_checksum_dict.items()]
-            setlines(file.parent / f'{file.stem}.build_checksums', this_checksum_lines)
+            setlines(build_checksums_path, this_checksum_lines)
     
-    build_opts = getlines(file.parent / f'{file.stem}.build_opts')
-    subprocess.run([*NUITKA, str(file), *build_opts])
+    build_opts = getlines(build_opts_path)
+    subprocess.run([*NUITKA, str(file), *build_opts], check=True)
     os.chdir(cwd)
 
 def rename_tree_overwrite(src: Path, dst: Path):
@@ -128,11 +130,11 @@ nuitka_build(src_dir / 'helper.py', ['fake_image_class.py', 'proxy_setter.py'])
 log_process('finished.')
 
 log_process('Building hook_minimize_button ...')
-subprocess.run([str(src_dir / 'hook_minimize_button' / 'cmake_build.bat'), 'x64'], shell=True)
+subprocess.run([str(src_dir / 'hook_minimize_button' / 'cmake_build.bat'), 'x64'], shell=True, check=True)
 log_process('finished.')
 
 log_process('Building OpenWebview2Window ...')
-subprocess.run([str(src_dir / 'OpenWebview2Window' / 'build.bat')], shell=True)
+subprocess.run([str(src_dir / 'OpenWebview2Window' / 'build.bat')], shell=True, check=True)
 log_process('finished.')
 
 log_process('Assembling dist ...')
