@@ -116,9 +116,7 @@ class v2rayaApplication:
                 '--userdata-path', self.helper_config_dir,
                 '--navigate-url',  f'http://{LOOPBACK_ADDR}:{self.ui_port}',
                 '--window-title', WINDOW_TITLE,
-            ),
-            shell=True,
-            startupinfo=SP_NOCONSOLE
+            )
         )
         sleep_time = 0
         while not (webview_hwnd := win32gui.FindWindow(None, WINDOW_TITLE)):

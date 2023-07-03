@@ -1,4 +1,5 @@
 --standalone
+--windows-disable-console
 --nofollow-import-to=numpy
 --nofollow-import-to=PIL
 --include-module=six
