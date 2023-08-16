@@ -5,3 +5,5 @@ src/*.dist
 src/*.build_checksums
 packer/dist
 packer/dist.zip
+packer/bundled/*
+!packer/bundled/.placeholder

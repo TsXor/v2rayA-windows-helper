@@ -5,7 +5,6 @@
 显示一个托盘图标，并且用单独的webview窗口显示V2rayA Web UI，退出时处理设置。  
 
 ## 编译与打包
-由于`nuitka`目前的发行版本不能成功打包`clr`，所以需要安装开发版的`nuitka`。  
 ```
 packer\pack.py
 ```
