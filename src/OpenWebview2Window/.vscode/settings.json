@@ -1,0 +1,5 @@
+{
+    "C_Cpp.codeAnalysis.clangTidy.config": "{SystemHeaders: false}",
+    "cmake.sourceDirectory": "${workspaceFolder}",
+    "cmake.buildDirectory": "${workspaceFolder}/build/cmake-build-vscplugin",
+}

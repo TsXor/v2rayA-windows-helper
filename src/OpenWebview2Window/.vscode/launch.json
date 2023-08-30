@@ -1,0 +1,39 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) launch test",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/dist/bin/x64/OpenWebview2Window.exe",
+            "args": [
+                "--userdata-path", "E:\\Users\\23Xor\\Desktop\\OpenWebview2Window-ng\\dist\\bin\\x64\\webdata",
+                "--navigate-url", "https://www.baidu.com",
+                "--window-title", "baidu",
+                "--tray-control"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "为 gdb 启用整齐打印",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "将反汇编风格设置为 Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "跟踪子进程",
+                    "text": "-gdb-set follow-fork-mode child",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ]
+}
