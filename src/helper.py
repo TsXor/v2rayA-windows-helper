@@ -67,15 +67,13 @@ class v2rayaApplication:
         vcore_asset_dir        = ensure_directory(self.app_root / 'vcore')
         vcore_config_dir       = ensure_directory(self.app_root / 'vcore' / 'config')
         helper_config_dir      = ensure_directory(self.app_root / 'chore-worker' / 'config')
-        open_webview_path      = ensure_file(self.app_root / 'chore-worker' / 'OpenWebview2Window', ['EdgeBrowserApp.exe'])
-        hook_button_path       = ensure_file(self.app_root / 'chore-worker' / 'hook_minimize_button', ['hook_minimize_button.exe'])
+        open_webview_path      = ensure_file(self.app_root / 'chore-worker' / 'OpenWebview2Window', ['OpenWebview2Window'])
 
         # save some paths for future use
         self.vcore_executable_path = vcore_executable_path
         self.helper_config_dir     = helper_config_dir
         self.v2raya_log_dir        = v2raya_log_dir
         self.open_webview_path     = open_webview_path
-        self.hook_button_path      = hook_button_path
 
         self.logfile_fp = self.open_new_log_fp()
         self.clean_logs()
@@ -117,15 +115,14 @@ class v2rayaApplication:
                 '--navigate-url',  f'http://{LOOPBACK_ADDR}:{self.ui_port}',
                 '--window-title', WINDOW_TITLE,
                 '--tray-control',
-            )
+            ),
+            stdout=subprocess.PIPE
         )
         sleep_time = 0
         while not (webview_hwnd := win32gui.FindWindow(None, WINDOW_TITLE)):
             time.sleep(0.5); sleep_time += 0.5
             if sleep_time >= MAX_WAIT_TIME: raise EnvironmentError('Webview no response!')
         self.webview_hwnd = webview_hwnd
-        subprocess.Popen(all_to_string(self.hook_button_path, webview_hwnd),
-                         shell=True, startupinfo=SP_NOCONSOLE)
     
     def open_webview_window(self):
         if self.webview_process.poll() is None:
