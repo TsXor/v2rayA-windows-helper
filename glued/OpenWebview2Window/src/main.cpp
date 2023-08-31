@@ -36,8 +36,10 @@ LRESULT CALLBACK HideWhenMinimizeProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
         case WM_SYSCOMMAND:{
             if (wParam == SC_MINIMIZE) {
                 ShowWindow(hwnd, SW_HIDE);
+                return 0;
+            } else {
+                return CallWindowProc((WNDPROC)OrigWindowProc, hwnd, uMsg, wParam, lParam);
             }
-            return 0;
         } break;
 
         default: return CallWindowProc((WNDPROC)OrigWindowProc, hwnd, uMsg, wParam, lParam);
@@ -61,6 +63,9 @@ int APIENTRY WinMain(
     webview::webview w = {false, nullptr, userdata_path};
     auto hwnd = (HWND)w.window();
     SetWindowTextW(hwnd, std::wstring(window_title).c_str());
+    auto style = GetWindowLongW(hwnd, GWL_STYLE);
+    style |= (WS_THICKFRAME | WS_MAXIMIZEBOX);
+    SetWindowLongW(hwnd, GWL_STYLE, style);
     MoveWindow(hwnd, pos.x, pos.y, pos.width, pos.height, true);
     if (!url_w.empty()) {
         auto url_u = webview::detail::narrow_string(std::wstring(url_w));
@@ -71,7 +76,7 @@ int APIENTRY WinMain(
         HMENU hmenu = GetSystemMenu(hwnd, false);
         RemoveMenu(hmenu, SC_CLOSE, MF_BYCOMMAND);
         OrigWindowProc = (WNDPROC)SetWindowLongPtrW(hwnd, GWLP_WNDPROC, (LONG_PTR)HideWhenMinimizeProc);
-        wprintf(L"%d", hwnd);
+        wprintf(L"%d ", hwnd);
     }
 
     w.run();
