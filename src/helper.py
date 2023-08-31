@@ -116,6 +116,7 @@ class v2rayaApplication:
                 '--userdata-path', self.helper_config_dir,
                 '--navigate-url',  f'http://{LOOPBACK_ADDR}:{self.ui_port}',
                 '--window-title', WINDOW_TITLE,
+                '--tray-control',
             )
         )
         sleep_time = 0

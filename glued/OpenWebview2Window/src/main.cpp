@@ -7,22 +7,7 @@
 #include "webview.hpp"
 
 
-#define IDI_APPLICATION_W MAKEINTRESOURCEW(32512)
-#define IDC_ARROW_W MAKEINTRESOURCEW(32512)
-
-
 OptionMapW option_map;
-
-auto naive_u16le_to_acsii(const std::wstring_view& wstr) {
-    std::string ret;
-    bool is_acsii = true;
-    for (auto wchr : wstr) {
-        if (wchr > 127) return std::tuple(ret, false);
-        ret.push_back(wchr & 0xFF);
-    }
-
-    return std::tuple(ret, true);
-}
 
 typedef struct window_pos_t_tag {
     int x;
@@ -76,11 +61,11 @@ int APIENTRY WinMain(
     webview::webview w = {false, nullptr, userdata_path};
     auto hwnd = (HWND)w.window();
     SetWindowTextW(hwnd, std::wstring(window_title).c_str());
-    if (!url_w.empty()) {
-        auto url_converted = naive_u16le_to_acsii(url_w);
-        if (std::get<1>(url_converted)) w.navigate(std::get<0>(url_converted));
-    }
     MoveWindow(hwnd, pos.x, pos.y, pos.width, pos.height, true);
+    if (!url_w.empty()) {
+        auto url_u = webview::detail::narrow_string(std::wstring(url_w));
+        if (!url_u.empty()) w.navigate(url_u);
+    }
 
     if (tray_control) {
         HMENU hmenu = GetSystemMenu(hwnd, false);
