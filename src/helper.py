@@ -3,6 +3,7 @@ from pathlib import Path
 from socket import socket
 import pystray, win32gui, win32con
 from fake_image_class import FakeImage
+from cext.get_process_hwnd import find_main_window
 from proxy_setter import close_proxy
 
 
@@ -67,7 +68,7 @@ class v2rayaApplication:
         vcore_asset_dir        = ensure_directory(self.app_root / 'vcore')
         vcore_config_dir       = ensure_directory(self.app_root / 'vcore' / 'config')
         helper_config_dir      = ensure_directory(self.app_root / 'chore-worker' / 'config')
-        open_webview_path      = ensure_file(self.app_root / 'chore-worker' / 'OpenWebview2Window', ['OpenWebview2Window'])
+        open_webview_path      = ensure_file(self.app_root / 'chore-worker' / 'OpenWebview2Window', ['OpenWebview2Window.exe'])
 
         # save some paths for future use
         self.vcore_executable_path = vcore_executable_path
@@ -118,11 +119,10 @@ class v2rayaApplication:
             ),
             stdout=subprocess.PIPE
         )
-        sleep_time = 0
-        while not (webview_hwnd := win32gui.FindWindow(None, WINDOW_TITLE)):
-            time.sleep(0.5); sleep_time += 0.5
-            if sleep_time >= MAX_WAIT_TIME: raise EnvironmentError('Webview no response!')
-        self.webview_hwnd = webview_hwnd
+        self.webview_hwnd = 0
+        while not self.webview_hwnd:
+            time.sleep(0.1)
+            self.webview_hwnd = find_main_window(self.webview_process.pid)
     
     def open_webview_window(self):
         if self.webview_process.poll() is None:
