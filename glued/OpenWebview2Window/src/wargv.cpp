@@ -45,8 +45,9 @@ static struct MyArgsW {
         size_t ansi_cmdline_length = strlen(ansi_cmdline);
         if (check_utf8_encoding(ansi_cmdline, ansi_cmdline_length)) {
             auto required_length = MultiByteToWideChar(CP_UTF8, 0, ansi_cmdline, ansi_cmdline_length, NULL, 0);
-            this->basestr = (wchar_t* )malloc(required_length * sizeof(wchar_t));
+            this->basestr = (wchar_t* )malloc((required_length + 1) * sizeof(wchar_t));
             MultiByteToWideChar(CP_UTF8, 0, ansi_cmdline, ansi_cmdline_length, this->basestr, required_length);
+            this->basestr[required_length] = L'\0';
         } else {
             this->basestr = GetCommandLineW();
         }
