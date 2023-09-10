@@ -119,10 +119,14 @@ class v2rayaApplication:
             ),
             stdout=subprocess.PIPE
         )
-        self.webview_hwnd = 0
-        while not self.webview_hwnd:
-            time.sleep(0.1)
-            self.webview_hwnd = find_main_window(self.webview_process.pid)
+        hwnd_bytestr: bytes = b''
+        while True:
+            hwnd_bytechr: bytes = self.webview_process.stdout.read(1)
+            if hwnd_bytechr == b' ': break
+            hwnd_bytestr += hwnd_bytechr
+        hwnd_str = hwnd_bytestr.decode()
+        self.webview_hwnd = int(hwnd_str)
+        print(f'webview window hwnd: {self.webview_hwnd}')
     
     def open_webview_window(self):
         if self.webview_process.poll() is None:
