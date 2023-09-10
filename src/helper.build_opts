@@ -1,4 +1,5 @@
 --standalone
+--windows-disable-console
 --include-module=calendar
 --nofollow-import-to=numpy
 --nofollow-import-to=PIL

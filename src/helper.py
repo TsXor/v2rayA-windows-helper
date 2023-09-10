@@ -173,5 +173,9 @@ class v2rayaTray:
 
 
 if __name__ == '__main__':
+    console_log_dir = SELF_PATH.parent / 'console_log'
+    console_log_dir.mkdir(parents=True, exist_ok=True)
+    sys.stdout = open(console_log_dir / 'stdout', 'wt')
+    sys.stderr = open(console_log_dir / 'stderr', 'wt')
     ROOT_DIR = SELF_PATH.parents[1]
     v2rayaTray(ROOT_DIR)
