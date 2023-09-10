@@ -28,5 +28,32 @@ EdgeBrowserApp.exe --userdata-path "E:\Users\AUSER\Downloads\path with space\web
 ```
 
 
+## Python胶水
+由于浏览器内部的多进程和启动器机制，用win32api获取的hwnd一般不准确。  
+本程序在打开`--tray-control`开关时会输出hwnd，在Python中可以利用`Popen::stdout`读取。  
+输出的hwnd会以空格结尾。  
+
+使用例：  
+```python
+p = subprocess.Popen(
+    [
+        r'E:\Users\23Xor\Desktop\OpenWebview2Window.exe',
+        '--userdata-path', r'E:\Users\23Xor\Desktop\ebdata',
+        '--navigate-url', 'https://www.baidu.com',
+        '--window-title', 'baidu',
+        '--tray-control'
+    ],
+    stdout=subprocess.PIPE
+)
+hwnd_bytestr: bytes = b''
+while True:
+    hwnd_bytechr: bytes = p.stdout.read(1)
+    if hwnd_bytechr == b' ': break
+    hwnd_bytestr += hwnd_bytechr
+hwnd_str = hwnd_bytestr.decode()
+hwnd = int(hwnd_str)
+```
+
+
 ## 注意  
 目前`webview`暂不支持指定用户数据存放位置，本项目自行修改添加了这个功能。  
