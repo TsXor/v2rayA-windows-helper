@@ -38,11 +38,11 @@ LRESULT CALLBACK HideWhenMinimizeProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
                 ShowWindow(hwnd, SW_HIDE);
                 return 0;
             } else {
-                return CallWindowProc((WNDPROC)OrigWindowProc, hwnd, uMsg, wParam, lParam);
+                return CallWindowProcW((WNDPROC)OrigWindowProc, hwnd, uMsg, wParam, lParam);
             }
         } break;
 
-        default: return CallWindowProc((WNDPROC)OrigWindowProc, hwnd, uMsg, wParam, lParam);
+        default: return CallWindowProcW((WNDPROC)OrigWindowProc, hwnd, uMsg, wParam, lParam);
 	}
 }
 
@@ -76,7 +76,8 @@ int APIENTRY WinMain(
         HMENU hmenu = GetSystemMenu(hwnd, false);
         RemoveMenu(hmenu, SC_CLOSE, MF_BYCOMMAND);
         OrigWindowProc = (WNDPROC)SetWindowLongPtrW(hwnd, GWLP_WNDPROC, (LONG_PTR)HideWhenMinimizeProc);
-        wprintf(L"%d ", hwnd);
+        printf("%d ", hwnd);
+        fflush(stdout);
     }
 
     w.run();
