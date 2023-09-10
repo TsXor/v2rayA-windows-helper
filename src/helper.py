@@ -3,7 +3,6 @@ from pathlib import Path
 from socket import socket
 import pystray, win32gui, win32con
 from fake_image_class import FakeImage
-from cext.get_process_hwnd import find_main_window
 from proxy_setter import close_proxy
 
 
